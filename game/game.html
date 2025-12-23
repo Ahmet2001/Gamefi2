@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuray Yolu - Dash Update</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: 'Inter', sans-serif; }
+        canvas { display: block; cursor: crosshair; }
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #scoreVal { font-weight: bold; color: #d4af37; font-size: 24px; }
+        #dashInfo { font-size: 14px; color: #aaa; margin-top: 5px; }
+        .dash-ready { color: #00ffcc !important; }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <div style="font-family: 'Cinzel'; font-size: 20px;">SKOR: <span id="scoreVal">0</span></div>
+    <div id="dashInfo">DASH: <span id="dashStatus" class="dash-ready">HAZIR [SPACE]</span></div>
+    <div style="font-size: 12px; margin-top: 5px;">[WASD] Hareket - [SOL TIK] Saldırı - [ESC] Menü</div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const config = {
+    name: localStorage.getItem("playerName") || "Bilinmez Savaşçı",
+    style: localStorage.getItem("playerStyle") || "balanced",
+    color: localStorage.getItem("playerColor") || "#8b0000"
+};
+
+let canvasWidth = window.innerWidth;
+let canvasHeight = window.innerHeight;
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
+
+let isPaused = false;
+let score = 0;
+const keys = {};
+const enemies = [];
+const particles = [];
+const slashes = [];
+
+const player = {
+    x: canvasWidth / 2,
+    y: canvasHeight / 2,
+    radius: 22,
+    speed: config.style === "speed" ? 7 : (config.style === "power" ? 3.5 : 5),
+    angle: 0,
+    isAttacking: false,
+    weaponRange: 60, // Eklendi
+    isDashing: false,
+    dashSpeed: 20,
+    dashDuration: 10,
+    dashCooldown: 60,
+    dashTimer: 0,
+    dashCooldownTimer: 0,
+    cloakNodes: Array.from({length: 10}, () => ({ x: canvasWidth / 2, y: canvasHeight / 2 })),
+    mousePos: { x: 0, y: 0 }
+};
+
+window.addEventListener("keydown", e => {
+    keys[e.code] = true;
+    if (e.code === "Escape") toggleMenu();
+    if (e.code === "Space") performDash();
+});
+window.addEventListener("keyup", e => keys[e.code] = false);
+window.addEventListener("mousemove", e => {
+    player.mousePos.x = e.clientX;
+    player.mousePos.y = e.clientY;
+});
+window.addEventListener("mousedown", () => {
+    if (!isPaused && !player.isAttacking) performAttack();
+});
+
+function toggleMenu() {
+    isPaused = !isPaused;
+    const existingMenu = document.getElementById("pauseMenu");
+    if (isPaused) {
+        const pauseHTML = `
+            <div id="pauseMenu" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,15,0.95); border:2px solid #d4af37; padding:2.5rem; text-align:center; color:white; z-index:10000; border-radius:15px; box-shadow: 0 0 30px rgba(0,0,0,0.8);">
+                <h1 style="font-family:'Cinzel'; color:#d4af37; margin-top:0;">DURDURULDU</h1>
+                <p style="margin:1rem 0; opacity:0.8;">${config.name} - ${config.style.toUpperCase()}</p>
+                <button onclick="window.location.reload()" style="background:#8b0000; color:white; padding:12px 25px; border:none; margin:5px; cursor:pointer; font-weight:bold; border-radius:5px;">DEVAM ET</button>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', pauseHTML);
+    } else if (existingMenu) {
+        existingMenu.remove();
+    }
+}
+
+function performDash() {
+    if (player.dashCooldownTimer > 0 || player.isDashing || isPaused) return;
+    player.isDashing = true;
+    player.dashTimer = player.dashDuration;
+    player.dashCooldownTimer = player.dashCooldown;
+    createDashGhost();
+}
+
+function createDashGhost() {
+    for(let i=0; i<5; i++) {
+        setTimeout(() => {
+            particles.push({
+                x: player.x,
+                y: player.y,
+                vx: 0, vy: 0,
+                life: 0.5,
+                isGhost: true,
+                angle: player.angle
+            });
+        }, i * 20);
+    }
+}
+
+function performAttack() {
+    player.isAttacking = true;
+    slashes.push({
+        x: player.x,
+        y: player.y,
+        angle: player.angle,
+        life: 1.0,
+        range: player.weaponRange
+    });
+    checkMeleeHit(player.angle);
+    setTimeout(() => { player.isAttacking = false; }, 200);
+}
+
+function checkMeleeHit(attackAngle) {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const en = enemies[i];
+        const dist = Math.hypot(en.x - player.x, en.y - player.y);
+        const angleToEnemy = Math.atan2(en.y - player.y, en.x - player.x);
+        let angleDiff = Math.abs(attackAngle - angleToEnemy);
+        if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+
+        if (dist < player.weaponRange + 20 && angleDiff < 0.9) {
+            createBloodParticles(en.x, en.y);
+            enemies.splice(i, 1);
+            score += 25;
+            document.getElementById("scoreVal").innerText = score;
+        }
+    }
+}
+
+function createBloodParticles(x, y) {
+    for (let i = 0; i < 8; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            life: 1.0,
+            color: '#660000'
+        });
+    }
+}
+
+function updateCloak() {
+    player.cloakNodes[0].x = player.x;
+    player.cloakNodes[0].y = player.y;
+
+    for (let i = 1; i < player.cloakNodes.length; i++) {
+        const node = player.cloakNodes[i];
+        const prev = player.cloakNodes[i - 1];
+        const followSpeed = player.isDashing ? 0.6 : 0.3;
+        const offset = player.isDashing ? 12 : 8;
+
+        const targetX = prev.x - Math.cos(player.angle) * offset;
+        const targetY = prev.y - Math.sin(player.angle) * offset;
+        
+        node.x += (targetX - node.x) * followSpeed;
+        node.y += (targetY - node.y) * followSpeed;
+    }
+}
+
+function drawPlayer() {
+    ctx.beginPath();
+    ctx.moveTo(player.cloakNodes[0].x, player.cloakNodes[0].y);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = config.color;
+    for (let i = 1; i < player.cloakNodes.length; i++) {
+        const node = player.cloakNodes[i];
+        ctx.lineWidth = Math.max(2, 25 - i * 2.2);
+        ctx.lineTo(node.x, node.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(node.x, node.y);
+    }
+
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    ctx.rotate(player.angle);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+    ctx.fillStyle = player.isDashing ? "#fff" : config.color;
+    ctx.fill();
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, player.radius + 6, 0, Math.PI * 2);
+    ctx.fillStyle = "#5c4033";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
+    ctx.lineWidth = 1;
+    for(let i=0;i<12;i++){
+        ctx.moveTo(0,0);
+        const a = (i/12)*Math.PI*2;
+        ctx.lineTo(Math.cos(a)*28, Math.sin(a)*28);
+    }
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0,0,5,0,Math.PI*2);
+    ctx.fillStyle="#3e2723";
+    ctx.fill();
+
+    ctx.rotate(-player.angle);
+    ctx.fillStyle="white";
+    ctx.font="bold 14px Inter";
+    ctx.textAlign="center";
+    ctx.fillText(config.name,0,-45);
+    ctx.restore();
+}
+
+function drawSlashes() {
+    for(let i = slashes.length - 1; i >=0; i--){
+        const s = slashes[i];
+        ctx.save();
+        ctx.translate(s.x,s.y);
+        ctx.rotate(s.angle);
+        ctx.beginPath();
+        ctx.arc(0,0,s.range,-1.0,1.0);
+        const grad = ctx.createRadialGradient(0,0,s.range-15,0,0,s.range+8);
+        grad.addColorStop(0,"transparent");
+        grad.addColorStop(0.5,`rgba(212,175,55,${s.life})`);
+        grad.addColorStop(1,"transparent");
+        ctx.strokeStyle=grad;
+        ctx.lineWidth = 20*s.life;
+        ctx.stroke();
+        ctx.restore();
+        s.life -= 0.08;
+        if(s.life<=0) slashes.splice(i,1);
+    }
+}
+
+function spawnEnemy() {
+    if (isPaused || enemies.length > 25) return;
+    let x, y;
+    if (Math.random() < 0.5) {
+        x = Math.random() < 0.5 ? -50 : canvasWidth + 50;
+        y = Math.random() * canvasHeight;
+    } else {
+        x = Math.random() * canvasWidth;
+        y = Math.random() < 0.5 ? -50 : canvasHeight + 50;
+    }
+    enemies.push({ x, y, radius: 18, speed: 1.5 + Math.random() * 1.2 });
+}
+setInterval(spawnEnemy, 900);
+
+function animate() {
+    if (!isPaused) {
+        ctx.fillStyle = "#c2a47d";
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        const dashStatus = document.getElementById("dashStatus");
+        if(player.dashCooldownTimer>0){
+            dashStatus.innerText="YÜKLENİYOR...";
+            dashStatus.classList.remove("dash-ready");
+            player.dashCooldownTimer--;
+        } else {
+            dashStatus.innerText="HAZIR [SPACE]";
+            dashStatus.classList.add("dash-ready");
+        }
+
+        if(player.isDashing){
+            player.x += Math.cos(player.angle)*player.dashSpeed;
+            player.y += Math.sin(player.angle)*player.dashSpeed;
+            player.dashTimer--;
+            if(player.dashTimer<=0) player.isDashing=false;
+        } else {
+            if(keys['KeyW']) player.y -= player.speed;
+            if(keys['KeyS']) player.y += player.speed;
+            if(keys['KeyA']) player.x -= player.speed;
+            if(keys['KeyD']) player.x += player.speed;
+        }
+
+        player.x = Math.max(player.radius, Math.min(canvasWidth - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvasHeight - player.radius, player.y));
+        player.angle = Math.atan2(player.mousePos.y - player.y, player.mousePos.x - player.x);
+
+        updateCloak();
+        drawSlashes();
+        drawPlayer();
+
+        // Parçacıklar
+        for(let i = particles.length -1; i>=0;i--){
+            const p = particles[i];
+            if(p.isGhost){
+                ctx.save();
+                ctx.translate(p.x,p.y);
+                ctx.rotate(p.angle);
+                ctx.beginPath();
+                ctx.arc(0,0,player.radius,0,Math.PI*2);
+                ctx.fillStyle=`rgba(255,255,255,${p.life*0.3})`;
+                ctx.fill();
+                ctx.restore();
+            } else {
+                p.x += p.vx;
+                p.y += p.vy;
+                ctx.beginPath();
+                ctx.arc(p.x,p.y,3,0,Math.PI*2);
+                ctx.fillStyle=`rgba(139,0,0,${p.life})`;
+                ctx.fill();
+            }
+            p.life -= 0.03;
+            if(p.life<=0) particles.splice(i,1);
+        }
+
+        // Düşmanlar
+        for(let i=enemies.length-1;i>=0;i--){
+            const en = enemies[i];
+            const angle = Math.atan2(player.y - en.y, player.x - en.x);
+            en.x += Math.cos(angle)*en.speed;
+            en.y += Math.sin(angle)*en.speed;
+
+            ctx.beginPath();
+            ctx.arc(en.x,en.y,en.radius,0,Math.PI*2);
+            ctx.fillStyle="#1a1a1a";
+            ctx.fill();
+            ctx.fillStyle="red";
+            ctx.beginPath();
+            ctx.arc(en.x+5,en.y-3,2,0,Math.PI*2);
+            ctx.arc(en.x-5,en.y-3,2,0,Math.PI*2);
+            ctx.fill();
+
+            const dist = Math.hypot(player.x - en.x, player.y - en.y);
+            if(!player.isDashing && dist < player.radius+en.radius-5){
+                isPaused = true;
+                if(confirm(`Onurlu Savaşçı ${config.name} düştü!\n\nSkor: ${score}\nTekrar denemek ister misin?`)) window.location.reload();
+            }
+        }
+    }
+    requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', ()=>{
+    canvasWidth = window.innerWidth;
+    canvasHeight = window.innerHeight;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+});
+
+animate();
+</script>
+</body>
+</html>

@@ -296,3 +296,506 @@ body {
     border-top: 1px solid #1a1a1a;
     color: #444;
 }
+:root {
+    --gold: #FFD700;
+    --gold-dim: rgba(255, 215, 0, 0.6);
+    --samurai-red: #E63946;
+    --dark-bg: #030303;
+    --accent-blue: #00F5FF; /* Cyber dokunuş için */
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Arkaplan Işıma Efekti */
+.glow-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 50%, rgba(230, 57, 70, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* NAVBAR */
+.navbar {
+    position: fixed;
+    width: 100%;
+    padding: 2rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+}
+
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+}
+
+.logo span { color: var(--samurai-red); }
+
+/* HERO SECTION */
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-video-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070') center/cover;
+    filter: brightness(0.3) contrast(1.2);
+    z-index: -1;
+}
+
+.main-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.9;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.highlight {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--gold);
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+/* BUTONLAR (Cyber-Samurai Style) */
+.btn-primary-lg {
+    background: var(--samurai-red);
+    padding: 1.2rem 3rem;
+    font-weight: 700;
+    clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+    transition: 0.4s;
+    border: none;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.btn-primary-lg:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(230, 57, 70, 0.4);
+}
+
+/* KARTLAR */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.feature-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.feature-card:hover {
+    border-color: var(--gold);
+    background: rgba(255, 215, 0, 0.02);
+}
+
+.card-glow {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,215,0,0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.feature-card:hover .card-glow { opacity: 1; }
+
+.section-label {
+    color: var(--samurai-red);
+    letter-spacing: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.section-heading {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    margin-bottom: 40px;
+}
+
+
+/* =======================
+   ROOT & RENKLER
+======================= */
+:root {
+    --gold: #FFD700;
+    --gold-dim: rgba(255, 215, 0, 0.6);
+    --samurai-red: #E63946;
+    --dark-bg: #030303;
+    --accent-blue: #00F5FF;
+    --accent-purple: #8A2BE2;
+    --accent-green: #00FF99;
+}
+
+/* =======================
+   RESET
+======================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* =======================
+   ARKA PLAN ANİMASYONU
+======================= */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(270deg, var(--accent-blue), var(--accent-purple), var(--gold), var(--accent-green));
+    background-size: 800% 800%;
+    animation: gradientAnimation 20s ease infinite;
+    z-index: -2;
+    opacity: 0.05;
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* =======================
+   NAVBAR
+======================= */
+.navbar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    padding: 2rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+}
+
+.logo span { color: var(--samurai-red); }
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: #aaa;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.nav-links a:hover, .nav-links a.highlight {
+    color: var(--gold);
+}
+
+/* =======================
+   HERO
+======================= */
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-video-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070') center/cover;
+    filter: brightness(0.3) contrast(1.2);
+    z-index: -1;
+}
+
+.main-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.9;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold), 0 0 20px var(--accent-blue), 0 0 30px var(--accent-purple);
+    animation: flicker 2s infinite alternate;
+}
+
+.highlight {
+    color: var(--accent-blue);
+    text-shadow: 0 0 15px var(--accent-blue), 0 0 30px var(--accent-purple);
+}
+
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 22%, 24%, 55% { opacity: 0.5; }
+}
+
+/* =======================
+   BUTONLAR
+======================= */
+.btn-primary-lg {
+    background: linear-gradient(90deg, var(--samurai-red), var(--accent-purple));
+    padding: 1.2rem 3rem;
+    font-weight: 700;
+    clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+    border: none;
+    cursor: pointer;
+    transition: 0.4s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary-lg::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0.5), rgba(255,255,255,0.2));
+    transform: skewX(-20deg);
+    transition: 0.5s;
+}
+
+.btn-primary-lg:hover::before { left: 100%; }
+
+.btn-primary-lg:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px var(--accent-purple);
+}
+
+/* =======================
+   KARTLAR & ÖZELLİKLER
+======================= */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.feature-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2.5rem;
+    overflow: hidden;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.feature-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 25px var(--accent-blue);
+    transform: translateY(-8px);
+}
+
+.feature-card .card-glow {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--accent-blue) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.feature-card:hover .card-glow { opacity: 0.6; }
+
+.section-label {
+    color: var(--samurai-red);
+    letter-spacing: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.section-heading {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    margin-bottom: 40px;
+}
+
+/* =======================
+   TOKENOMICS / PROGRESS
+======================= */
+.progress-bar {
+    background: #111;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    height: 10px;
+    margin-top: 10px;
+}
+
+.progress-bar div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--accent-blue), var(--accent-purple));
+    animation: moveGradient 2s linear infinite;
+    border-radius: 10px;
+}
+
+@keyframes moveGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* =======================
+   FOOTER
+======================= */
+.footer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    padding: 3rem 2rem;
+    background: #050505;
+}
+
+.footer-card {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.footer-card h3 {
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid #1a1a1a;
+    color: #444;
+}
+
+/* =======================
+   RESPONSIVE
+======================= */
+@media (max-width: 768px) {
+    .main-title { font-size: 2.5rem; }
+    .feature-grid { gap: 20px; }
+    .navbar { padding: 1rem 2rem; }
+    .btn-primary-lg { padding: 1rem 2rem; font-size: 0.95rem; }
+}
+/* =======================
+   HERO ANİMASYONLARI
+======================= */
+.main-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.9;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold), 0 0 20px var(--accent-blue), 0 0 30px var(--accent-purple);
+    animation: flicker 2s infinite alternate, titleFadeIn 2s ease forwards;
+    opacity: 0;
+}
+
+@keyframes titleFadeIn {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* =======================
+   BUTON ANİMASYONLARI
+======================= */
+.btn-primary-lg {
+    background: linear-gradient(90deg, var(--samurai-red), var(--accent-purple));
+    padding: 1.2rem 3rem;
+    font-weight: 700;
+    clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+    border: none;
+    cursor: pointer;
+    transition: 0.4s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary-lg::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0.5), rgba(255,255,255,0.2));
+    transform: skewX(-20deg);
+    transition: 0.5s;
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: -100%; }
+}
+
+/* =======================
+   FEATURE CARD ANİMASYONLARI
+======================= */
+.feature-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2.5rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: cardFadeIn 1s forwards;
+}
+
+@keyframes cardFadeIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hover efekti zaten mevcut ama biraz daha glow ekleyebiliriz */
+.feature-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 30px var(--accent-blue);
+    transform: translateY(-10px);
+}
