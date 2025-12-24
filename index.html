@@ -5,9 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desert Samurai | Play-to-Earn</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="landing/landing.css">
+    <script src="https://bundle.run/buffer@6.0.3"></script>
+    <script>
+        // Tarayıcıya Buffer'ın nerede olduğunu tanıtıyoruz
+        window.Buffer = window.Buffer || buffer.Buffer;
+    </script>
+
+    <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
+    <!-- CDN üzerinden yükle, local dosyaya gerek yok -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+
 </head>
 <body>
 
@@ -59,6 +69,11 @@
             </div>
         </div>
     </section>
+    <section id="wallet-info" class="wallet-info p-4">
+        <h2 class="section-title">Wallet Info</h2>
+        <ul id="token-list" class="token-list list-disc list-inside text-white"></ul>
+    </section>
+    
     
     <footer class="footer-main">
         <div class="footer-stats">
@@ -88,7 +103,21 @@
                 </div>
         </div>
     </footer>
+    <div id="payment-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50">
+        <div class="bg-[#1a1a1a] border-2 border-[#d4af37] p-8 rounded-2xl max-w-sm w-full text-center shadow-[0_0_50px_rgba(212,175,55,0.3)]">
+            <div class="text-4xl mb-4">📜</div>
+            <h2 class="text-[#d4af37] font-bold text-2xl mb-2">Giriş Bedeli</h2>
+            <p class="text-gray-400 mb-6">Maceraya başlamak için <span class="text-white font-bold">10 $BUSHIDO</span> ödemen gerekiyor.</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="executeTokenTransfer()" id="confirm-pay-btn" class="bg-[#d4af37] text-black font-bold py-3 rounded-lg hover:bg-[#b8962e] transition-all">
+                    ONAYLA VE GÖNDER
+                </button>
+                <button onclick="closePaymentModal()" class="text-gray-500 hover:text-white text-sm">Vazgeç</button>
+            </div>
+        </div>
+    </div>
     
     <script src="landing/landing.js"></script>
 </body>
-</html>
+</html>  

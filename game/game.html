@@ -3,30 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samuray Yolu - Dash Update</title>
+    <title>Samuray Yolu - Gelişmiş Menü</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #222; font-family: 'Inter', sans-serif; }
+        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Inter', sans-serif; user-select: none; }
         canvas { display: block; cursor: crosshair; }
+        
         #ui {
             position: fixed;
             top: 20px;
             left: 20px;
             color: white;
             pointer-events: none;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
         }
-        #scoreVal { font-weight: bold; color: #d4af37; font-size: 24px; }
-        #dashInfo { font-size: 14px; color: #aaa; margin-top: 5px; }
-        .dash-ready { color: #00ffcc !important; }
+
+        .hp-container {
+            width: 280px;
+            height: 22px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #d4af37;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        #hp-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #600, #b00);
+            transition: width 0.2s ease-out;
+        }
+        .hp-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-family: 'Cinzel';
+            font-size: 12px;
+            line-height: 22px;
+            letter-spacing: 2px;
+        }
+
+        #stats-ui { text-shadow: 2px 2px 4px rgba(0,0,0,1); }
+        #scoreVal { color: #d4af37; font-size: 26px; font-family: 'Cinzel'; }
+        #dashStatus { font-size: 13px; font-weight: bold; }
+        .dash-ready { color: #00ffcc; text-shadow: 0 0 8px rgba(0,255,204,0.5); }
+        .dash-charging { color: #555; }
+
+        #vignette {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            box-shadow: inset 0 0 100px rgba(139,0,0,0);
+            pointer-events: none;
+            transition: box-shadow 0.3s;
+            z-index: 5;
+        }
+
+        /* Ortak Menü Stili */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+        }
+
+        .menu-container {
+            width: 800px;
+            height: 500px;
+            background: #121212;
+            border: 2px solid #d4af37;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 20px;
+            gap: 20px;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Duraklatma / Ayarlar Menüsü Özel */
+        #pause-menu .menu-container {
+            display: flex;
+            flex-direction: column;
+            width: 400px;
+            height: auto;
+            align-items: center;
+            gap: 25px;
+            padding: 40px;
+        }
+
+        .menu-section {
+            border: 1px solid #333;
+            padding: 15px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .menu-title {
+            font-family: 'Cinzel';
+            color: #d4af37;
+            border-bottom: 1px solid #d4af37;
+            margin-bottom: 15px;
+            text-align: center;
+            padding-bottom: 5px;
+            width: 100%;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            font-family: 'Cinzel';
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: #d4af37;
+            color: #000;
+        }
+
+        .setting-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #aaa;
+        }
+
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+        .stat-label { color: #aaa; }
+        .stat-value { color: #fff; font-weight: bold; }
+
+        .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .inv-slot {
+            aspect-ratio: 1;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #d4af37;
+        }
+
+        #mini-map-container {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            position: relative;
+            border: 1px solid #444;
+        }
+
+        #mini-map-canvas { width: 100%; height: 100%; }
+
+        .hint {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            color: #666;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
+<div id="vignette"></div>
 <div id="ui">
-    <div style="font-family: 'Cinzel'; font-size: 20px;">SKOR: <span id="scoreVal">0</span></div>
-    <div id="dashInfo">DASH: <span id="dashStatus" class="dash-ready">HAZIR [SPACE]</span></div>
-    <div style="font-size: 12px; margin-top: 5px;">[WASD] Hareket - [SOL TIK] Saldırı - [ESC] Menü</div>
+    <div class="hp-container">
+        <div id="hp-bar"></div>
+        <div class="hp-text">ONUR (SAĞLIK)</div>
+    </div>
+    <div id="stats-ui">
+        <div style="font-family: 'Cinzel'; font-size: 18px;">SKOR: <span id="scoreVal">0</span></div>
+        <div id="dashStatus" class="dash-ready">DASH: HAZIR [SPACE]</div>
+        <div style="font-size: 11px; margin-top: 5px; color: #888;">MENÜ: [Y] | AYARLAR: [ESC]</div>
+    </div>
+</div>
+
+<!-- Karakter Menüsü (Y) -->
+<div id="menu-overlay" class="overlay">
+    <div class="menu-container">
+        <!-- Sol: Karakter Özellikleri -->
+        <div class="menu-section">
+            <h2 class="menu-title">ÖZELLİKLER</h2>
+            <div class="stat-row"><span class="stat-label">İsim:</span> <span class="stat-value" id="stat-name">Samuray</span></div>
+            <div class="stat-row"><span class="stat-label">Can:</span> <span class="stat-value" id="stat-hp">100/100</span></div>
+            <div class="stat-row"><span class="stat-label">Hız:</span> <span class="stat-value" id="stat-speed">5.5</span></div>
+            <div class="stat-row"><span class="stat-label">Atılma:</span> <span class="stat-value">Aktif</span></div>
+            <div class="stat-row"><span class="stat-label">Skor:</span> <span class="stat-value" id="stat-score">0</span></div>
+        </div>
+
+        <!-- Orta: Envanter -->
+        <div class="menu-section">
+            <h2 class="menu-title">ENVANTER</h2>
+            <div class="inventory-grid">
+                <div class="inv-slot">
+                    <span style="font-size: 20px;">🗡️</span>
+                    <span>Katana</span>
+                </div>
+                <div class="inv-slot">
+                    <span style="font-size: 20px;">👒</span>
+                    <span>Jingasa</span>
+                </div>
+                <div class="inv-slot" style="opacity: 0.3;">
+                    <span>BOŞ</span>
+                </div>
+                <div class="inv-slot" style="opacity: 0.3;">
+                    <span>BOŞ</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ: Mini Map -->
+        <div class="menu-section">
+            <h2 class="menu-title">HARİTA</h2>
+            <div id="mini-map-container">
+                <canvas id="mini-map-canvas"></canvas>
+            </div>
+            <p style="font-size: 12px; color: #888; margin-top: 10px; text-align: center;">Kırmızı noktalar yaklaşan düşmanları gösterir.</p>
+        </div>
+    </div>
+    <div class="hint">KAPATMAK İÇİN TEKRAR [Y] BASIN</div>
+</div>
+
+<!-- Duraklatma / Ayarlar Menüsü (ESC) -->
+<div id="pause-menu" class="overlay">
+    <div class="menu-container">
+        <h2 class="menu-title">OYUN DURDURULDU</h2>
+        
+        <div class="setting-row">
+            <span>Ses Efektleri</span>
+            <input type="range" min="0" max="100" value="80">
+        </div>
+
+        <div class="setting-row">
+            <span>Sarsıntı Efekti</span>
+            <input type="checkbox" checked id="shake-toggle">
+        </div>
+
+        <button class="menu-btn" onclick="togglePauseMenu()">DEVAM ET</button>
+        <button class="menu-btn" onclick="goToMainMenu()">ANA MENÜYE DÖN</button>
+    </div>
+    <div class="hint">DÖNMEK İÇİN [ESC] BASIN</div>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -34,10 +260,11 @@
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const miniMapCanvas = document.getElementById("mini-map-canvas");
+const mctx = miniMapCanvas.getContext("2d");
 
 const config = {
-    name: localStorage.getItem("playerName") || "Bilinmez Savaşçı",
-    style: localStorage.getItem("playerStyle") || "balanced",
+    name: localStorage.getItem("playerName") || "Samuray",
     color: localStorage.getItem("playerColor") || "#8b0000"
 };
 
@@ -47,7 +274,10 @@ canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
 let isPaused = false;
+let isMenuOpen = false;
+let isPauseMenuOpen = false;
 let score = 0;
+let shakeAmount = 0;
 const keys = {};
 const enemies = [];
 const particles = [];
@@ -56,50 +286,109 @@ const slashes = [];
 const player = {
     x: canvasWidth / 2,
     y: canvasHeight / 2,
-    radius: 22,
-    speed: config.style === "speed" ? 7 : (config.style === "power" ? 3.5 : 5),
+    radius: 20,
+    hp: 100,
+    maxHp: 100,
+    speed: 5.5,
     angle: 0,
     isAttacking: false,
-    weaponRange: 60, // Eklendi
+    attackFrame: 0,
     isDashing: false,
-    dashSpeed: 20,
+    dashSpeed: 24,
     dashDuration: 10,
-    dashCooldown: 60,
+    dashCooldown: 50,
     dashTimer: 0,
     dashCooldownTimer: 0,
-    cloakNodes: Array.from({length: 10}, () => ({ x: canvasWidth / 2, y: canvasHeight / 2 })),
+    cloakNodes: Array.from({length: 8}, (_, i) => ({ x: canvasWidth / 2, y: canvasHeight / 2 })),
     mousePos: { x: 0, y: 0 }
 };
 
 window.addEventListener("keydown", e => {
     keys[e.code] = true;
-    if (e.code === "Escape") toggleMenu();
+    
+    // Menü Mantığı
+    if (e.code === "KeyY" && !isPauseMenuOpen) {
+        toggleCharacterMenu();
+    }
+    
+    if (e.code === "Escape") {
+        if (isMenuOpen) {
+            toggleCharacterMenu(); // Karakter menüsü açıksa önce onu kapat
+        } else {
+            togglePauseMenu(); // Değilse duraklatma menüsünü aç/kapat
+        }
+    }
+
     if (e.code === "Space") performDash();
 });
+
 window.addEventListener("keyup", e => keys[e.code] = false);
 window.addEventListener("mousemove", e => {
     player.mousePos.x = e.clientX;
     player.mousePos.y = e.clientY;
 });
+
 window.addEventListener("mousedown", () => {
-    if (!isPaused && !player.isAttacking) performAttack();
+    if (isPaused || isMenuOpen || isPauseMenuOpen || player.isAttacking) return;
+    performAttack();
 });
 
-function toggleMenu() {
-    isPaused = !isPaused;
-    const existingMenu = document.getElementById("pauseMenu");
-    if (isPaused) {
-        const pauseHTML = `
-            <div id="pauseMenu" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,15,15,0.95); border:2px solid #d4af37; padding:2.5rem; text-align:center; color:white; z-index:10000; border-radius:15px; box-shadow: 0 0 30px rgba(0,0,0,0.8);">
-                <h1 style="font-family:'Cinzel'; color:#d4af37; margin-top:0;">DURDURULDU</h1>
-                <p style="margin:1rem 0; opacity:0.8;">${config.name} - ${config.style.toUpperCase()}</p>
-                <button onclick="window.location.reload()" style="background:#8b0000; color:white; padding:12px 25px; border:none; margin:5px; cursor:pointer; font-weight:bold; border-radius:5px;">DEVAM ET</button>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', pauseHTML);
-    } else if (existingMenu) {
-        existingMenu.remove();
+function toggleCharacterMenu() {
+    isMenuOpen = !isMenuOpen;
+    isPaused = isMenuOpen || isPauseMenuOpen;
+    const menu = document.getElementById("menu-overlay");
+    menu.style.display = isMenuOpen ? "flex" : "none";
+    
+    if (isMenuOpen) {
+        updateStatsInMenu();
+        renderMiniMap();
     }
+}
+
+function togglePauseMenu() {
+    isPauseMenuOpen = !isPauseMenuOpen;
+    isPaused = isMenuOpen || isPauseMenuOpen;
+    const pauseMenu = document.getElementById("pause-menu");
+    pauseMenu.style.display = isPauseMenuOpen ? "flex" : "none";
+}
+
+function goToMainMenu() {
+    // Belirttiğiniz yerel sunucu adresine yönlendirme yapar
+    window.location.href = "/index.html";
+}
+
+function updateStatsInMenu() {
+    document.getElementById("stat-name").innerText = config.name;
+    document.getElementById("stat-hp").innerText = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+    document.getElementById("stat-speed").innerText = player.speed;
+    document.getElementById("stat-score").innerText = score;
+}
+
+function renderMiniMap() {
+    if (!isMenuOpen) return;
+    
+    miniMapCanvas.width = 200;
+    miniMapCanvas.height = 200;
+    
+    mctx.fillStyle = "#000";
+    mctx.fillRect(0, 0, 200, 200);
+    
+    const px = (player.x / canvasWidth) * 200;
+    const py = (player.y / canvasHeight) * 200;
+    
+    mctx.fillStyle = "white";
+    mctx.beginPath();
+    mctx.arc(px, py, 4, 0, Math.PI * 2);
+    mctx.fill();
+    
+    mctx.fillStyle = "red";
+    enemies.forEach(en => {
+        const ex = (en.x / canvasWidth) * 200;
+        const ey = (en.y / canvasHeight) * 200;
+        mctx.beginPath();
+        mctx.arc(ex, ey, 2, 0, Math.PI * 2);
+        mctx.fill();
+    });
 }
 
 function performDash() {
@@ -107,38 +396,45 @@ function performDash() {
     player.isDashing = true;
     player.dashTimer = player.dashDuration;
     player.dashCooldownTimer = player.dashCooldown;
-    createDashGhost();
+    shakeAmount = 5;
+    createDashEffects();
 }
 
-function createDashGhost() {
-    for(let i=0; i<5; i++) {
-        setTimeout(() => {
-            particles.push({
-                x: player.x,
-                y: player.y,
-                vx: 0, vy: 0,
-                life: 0.5,
-                isGhost: true,
-                angle: player.angle
-            });
-        }, i * 20);
+function createDashEffects() {
+    for(let i=0; i<4; i++) {
+        particles.push({
+            x: player.x, y: player.y,
+            vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2,
+            life: 0.5, isGhost: true, angle: player.angle
+        });
     }
 }
 
 function performAttack() {
     player.isAttacking = true;
+    player.attackFrame = 0;
+    const slashAngle = player.angle;
+    
     slashes.push({
-        x: player.x,
-        y: player.y,
-        angle: player.angle,
-        life: 1.0,
-        range: player.weaponRange
+        x: player.x, y: player.y,
+        angle: slashAngle, life: 1.0,
+        range: 90
     });
-    checkMeleeHit(player.angle);
-    setTimeout(() => { player.isAttacking = false; }, 200);
+
+    shakeAmount = 4;
+    checkMeleeHit(slashAngle);
+    
+    const attackInterval = setInterval(() => {
+        player.attackFrame += 0.2;
+        if (player.attackFrame >= 1) {
+            player.isAttacking = false;
+            clearInterval(attackInterval);
+        }
+    }, 30);
 }
 
 function checkMeleeHit(attackAngle) {
+    let hitSomething = false;
     for (let i = enemies.length - 1; i >= 0; i--) {
         const en = enemies[i];
         const dist = Math.hypot(en.x - player.x, en.y - player.y);
@@ -146,23 +442,26 @@ function checkMeleeHit(attackAngle) {
         let angleDiff = Math.abs(attackAngle - angleToEnemy);
         if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
 
-        if (dist < player.weaponRange + 20 && angleDiff < 0.9) {
-            createBloodParticles(en.x, en.y);
+        if (dist < 100 && angleDiff < 1.2) {
+            hitSomething = true;
+            en.x += Math.cos(angleToEnemy) * 50;
+            en.y += Math.sin(angleToEnemy) * 50;
+            createBloodParticles(en.x, en.y, angleToEnemy);
             enemies.splice(i, 1);
-            score += 25;
+            score += 50;
             document.getElementById("scoreVal").innerText = score;
         }
     }
+    if(hitSomething) shakeAmount = 10;
 }
 
-function createBloodParticles(x, y) {
-    for (let i = 0; i < 8; i++) {
+function createBloodParticles(x, y, angle) {
+    for (let i = 0; i < 15; i++) {
         particles.push({
             x, y,
-            vx: (Math.random() - 0.5) * 6,
-            vy: (Math.random() - 0.5) * 6,
-            life: 1.0,
-            color: '#660000'
+            vx: Math.cos(angle + (Math.random()-0.5)*2) * (Math.random() * 12),
+            vy: Math.sin(angle + (Math.random()-0.5)*2) * (Math.random() * 12),
+            life: 1.2, color: '#8b0000', size: Math.random() * 5 + 2
         });
     }
 }
@@ -174,14 +473,11 @@ function updateCloak() {
     for (let i = 1; i < player.cloakNodes.length; i++) {
         const node = player.cloakNodes[i];
         const prev = player.cloakNodes[i - 1];
-        const followSpeed = player.isDashing ? 0.6 : 0.3;
-        const offset = player.isDashing ? 12 : 8;
-
-        const targetX = prev.x - Math.cos(player.angle) * offset;
-        const targetY = prev.y - Math.sin(player.angle) * offset;
-        
-        node.x += (targetX - node.x) * followSpeed;
-        node.y += (targetY - node.y) * followSpeed;
+        const targetDist = player.isDashing ? 9 : 5;
+        const targetX = prev.x - Math.cos(player.angle) * targetDist;
+        const targetY = prev.y - Math.sin(player.angle) * targetDist;
+        node.x += (targetX - node.x) * 0.3;
+        node.y += (targetY - node.y) * 0.3;
     }
 }
 
@@ -193,7 +489,7 @@ function drawPlayer() {
     ctx.strokeStyle = config.color;
     for (let i = 1; i < player.cloakNodes.length; i++) {
         const node = player.cloakNodes[i];
-        ctx.lineWidth = Math.max(2, 25 - i * 2.2);
+        ctx.lineWidth = Math.max(4, 22 - i * 2.4);
         ctx.lineTo(node.x, node.y);
         ctx.stroke();
         ctx.beginPath();
@@ -204,99 +500,134 @@ function drawPlayer() {
     ctx.translate(player.x, player.y);
     ctx.rotate(player.angle);
 
+    if (player.isAttacking) {
+        const swingProgress = player.attackFrame;
+        const swingAngle = (swingProgress - 0.5) * 2.5; 
+        ctx.save();
+        ctx.rotate(swingAngle);
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(70, -2);
+        ctx.lineTo(75, 0);
+        ctx.lineTo(70, 2);
+        ctx.closePath();
+        ctx.fillStyle = "#e0e0e0";
+        ctx.fill();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = "#333";
+        ctx.fillRect(0, -3, 15, 6);
+        ctx.fillStyle = "#d4af37";
+        ctx.fillRect(12, -6, 4, 12);
+        ctx.restore();
+    }
+
     ctx.beginPath();
     ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-    ctx.fillStyle = player.isDashing ? "#fff" : config.color;
+    ctx.fillStyle = player.isDashing ? "#fff" : "#111";
     ctx.fill();
-    ctx.strokeStyle = "#111";
+    ctx.strokeStyle = "#d4af37";
     ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(0, 0, player.radius + 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#5c4033";
+    ctx.fillStyle = "#3e2723";
     ctx.fill();
-    ctx.strokeStyle = "rgba(0,0,0,0.4)";
-    ctx.lineWidth = 1;
-    for(let i=0;i<12;i++){
+    ctx.strokeStyle = "rgba(0,0,0,0.6)";
+    for(let i=0; i<12; i++) {
         ctx.moveTo(0,0);
-        const a = (i/12)*Math.PI*2;
-        ctx.lineTo(Math.cos(a)*28, Math.sin(a)*28);
+        const a = (i/12) * Math.PI * 2;
+        ctx.lineTo(Math.cos(a)*25, Math.sin(a)*25);
     }
     ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(0,0,5,0,Math.PI*2);
-    ctx.fillStyle="#3e2723";
-    ctx.fill();
 
     ctx.rotate(-player.angle);
-    ctx.fillStyle="white";
-    ctx.font="bold 14px Inter";
-    ctx.textAlign="center";
-    ctx.fillText(config.name,0,-45);
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.font = "bold 12px Inter";
+    ctx.textAlign = "center";
+    ctx.fillText(config.name.toUpperCase(), 0, -45);
     ctx.restore();
 }
 
 function drawSlashes() {
-    for(let i = slashes.length - 1; i >=0; i--){
-        const s = slashes[i];
+    slashes.forEach((s, i) => {
         ctx.save();
-        ctx.translate(s.x,s.y);
+        ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
         ctx.beginPath();
-        ctx.arc(0,0,s.range,-1.0,1.0);
-        const grad = ctx.createRadialGradient(0,0,s.range-15,0,0,s.range+8);
-        grad.addColorStop(0,"transparent");
-        grad.addColorStop(0.5,`rgba(212,175,55,${s.life})`);
-        grad.addColorStop(1,"transparent");
-        ctx.strokeStyle=grad;
-        ctx.lineWidth = 20*s.life;
+        ctx.arc(0, 0, s.range, -1.4, 1.4);
+        const grad = ctx.createRadialGradient(0,0, s.range - 20, 0, 0, s.range + 5);
+        grad.addColorStop(0, "transparent");
+        grad.addColorStop(0.5, `rgba(255, 255, 255, ${s.life * 0.9})`);
+        grad.addColorStop(1, "transparent");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 25 * s.life;
         ctx.stroke();
         ctx.restore();
-        s.life -= 0.08;
-        if(s.life<=0) slashes.splice(i,1);
-    }
+        s.life -= 0.1;
+        if (s.life <= 0) slashes.splice(i, 1);
+    });
 }
 
 function spawnEnemy() {
-    if (isPaused || enemies.length > 25) return;
+    if (isPaused || enemies.length > 10) return;
+    const side = Math.floor(Math.random() * 4);
     let x, y;
-    if (Math.random() < 0.5) {
-        x = Math.random() < 0.5 ? -50 : canvasWidth + 50;
-        y = Math.random() * canvasHeight;
-    } else {
-        x = Math.random() * canvasWidth;
-        y = Math.random() < 0.5 ? -50 : canvasHeight + 50;
-    }
-    enemies.push({ x, y, radius: 18, speed: 1.5 + Math.random() * 1.2 });
+    if (side === 0) { x = Math.random() * canvasWidth; y = -50; }
+    else if (side === 1) { x = canvasWidth + 50; y = Math.random() * canvasHeight; }
+    else if (side === 2) { x = Math.random() * canvasWidth; y = canvasHeight + 50; }
+    else { x = -50; y = Math.random() * canvasHeight; }
+    enemies.push({ x, y, radius: 18, speed: 2.0 + Math.random() * 1.5 });
 }
-setInterval(spawnEnemy, 900);
+setInterval(spawnEnemy, 1800);
 
 function animate() {
     if (!isPaused) {
-        ctx.fillStyle = "#c2a47d";
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        let sx = (Math.random() - 0.5) * shakeAmount;
+        let sy = (Math.random() - 0.5) * shakeAmount;
+        
+        // Sarsıntı ayarı kontrolü
+        const shakeEnabled = document.getElementById("shake-toggle").checked;
+        if (!shakeEnabled) { sx = 0; sy = 0; }
+        
+        shakeAmount *= 0.85;
+
+        ctx.setTransform(1, 0, 0, 1, sx, sy);
+        ctx.fillStyle = "#2a221b";
+        ctx.fillRect(-100, -100, canvasWidth+200, canvasHeight+200);
+
+        const hpPercent = (player.hp / player.maxHp) * 100;
+        document.getElementById("hp-bar").style.width = hpPercent + "%";
+        document.getElementById("vignette").style.boxShadow = `inset 0 0 150px rgba(139,0,0,${(1 - player.hp/100) * 0.8})`;
 
         const dashStatus = document.getElementById("dashStatus");
-        if(player.dashCooldownTimer>0){
-            dashStatus.innerText="YÜKLENİYOR...";
-            dashStatus.classList.remove("dash-ready");
+        if(player.dashCooldownTimer > 0) {
+            dashStatus.innerText = "DASH: DOLUYOR...";
+            dashStatus.className = "dash-charging";
             player.dashCooldownTimer--;
         } else {
-            dashStatus.innerText="HAZIR [SPACE]";
-            dashStatus.classList.add("dash-ready");
+            dashStatus.innerText = "DASH: HAZIR [SPACE]";
+            dashStatus.className = "dash-ready";
         }
 
-        if(player.isDashing){
-            player.x += Math.cos(player.angle)*player.dashSpeed;
-            player.y += Math.sin(player.angle)*player.dashSpeed;
+        if (player.isDashing) {
+            player.x += Math.cos(player.angle) * player.dashSpeed;
+            player.y += Math.sin(player.angle) * player.dashSpeed;
             player.dashTimer--;
-            if(player.dashTimer<=0) player.isDashing=false;
+            if(player.dashTimer <= 0) player.isDashing = false;
         } else {
-            if(keys['KeyW']) player.y -= player.speed;
-            if(keys['KeyS']) player.y += player.speed;
-            if(keys['KeyA']) player.x -= player.speed;
-            if(keys['KeyD']) player.x += player.speed;
+            let mvX = 0, mvY = 0;
+            if (keys['KeyW']) mvY -= 1;
+            if (keys['KeyS']) mvY += 1;
+            if (keys['KeyA']) mvX -= 1;
+            if (keys['KeyD']) mvX += 1;
+            if(mvX !== 0 || mvY !== 0) {
+                const mag = Math.hypot(mvX, mvY);
+                player.x += (mvX / mag) * player.speed;
+                player.y += (mvY / mag) * player.speed;
+            }
         }
 
         player.x = Math.max(player.radius, Math.min(canvasWidth - player.radius, player.x));
@@ -307,62 +638,59 @@ function animate() {
         drawSlashes();
         drawPlayer();
 
-        // Parçacıklar
-        for(let i = particles.length -1; i>=0;i--){
-            const p = particles[i];
-            if(p.isGhost){
+        particles.forEach((p, i) => {
+            if(p.isGhost) {
                 ctx.save();
-                ctx.translate(p.x,p.y);
+                ctx.translate(p.x, p.y);
                 ctx.rotate(p.angle);
-                ctx.beginPath();
-                ctx.arc(0,0,player.radius,0,Math.PI*2);
-                ctx.fillStyle=`rgba(255,255,255,${p.life*0.3})`;
-                ctx.fill();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${p.life})`;
+                ctx.strokeRect(-15, -15, 30, 30);
                 ctx.restore();
             } else {
-                p.x += p.vx;
-                p.y += p.vy;
-                ctx.beginPath();
-                ctx.arc(p.x,p.y,3,0,Math.PI*2);
-                ctx.fillStyle=`rgba(139,0,0,${p.life})`;
+                p.x += p.vx; p.y += p.vy;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(139, 0, 0, ${p.life})`;
                 ctx.fill();
             }
-            p.life -= 0.03;
-            if(p.life<=0) particles.splice(i,1);
-        }
+            p.life -= 0.025;
+            if (p.life <= 0) particles.splice(i, 1);
+        });
 
-        // Düşmanlar
-        for(let i=enemies.length-1;i>=0;i--){
-            const en = enemies[i];
+        enemies.forEach((en, i) => {
             const angle = Math.atan2(player.y - en.y, player.x - en.x);
-            en.x += Math.cos(angle)*en.speed;
-            en.y += Math.sin(angle)*en.speed;
+            en.x += Math.cos(angle) * en.speed;
+            en.y += Math.sin(angle) * en.speed;
 
+            ctx.save();
+            ctx.translate(en.x, en.y);
+            ctx.rotate(angle);
             ctx.beginPath();
-            ctx.arc(en.x,en.y,en.radius,0,Math.PI*2);
-            ctx.fillStyle="#1a1a1a";
+            ctx.rect(-15, -15, 30, 30);
+            ctx.fillStyle = "#111";
             ctx.fill();
-            ctx.fillStyle="red";
-            ctx.beginPath();
-            ctx.arc(en.x+5,en.y-3,2,0,Math.PI*2);
-            ctx.arc(en.x-5,en.y-3,2,0,Math.PI*2);
-            ctx.fill();
+            ctx.strokeStyle = "#444";
+            ctx.stroke();
+            ctx.fillStyle = "red";
+            ctx.fillRect(5, -8, 4, 4);
+            ctx.fillRect(5, 4, 4, 4);
+            ctx.restore();
 
             const dist = Math.hypot(player.x - en.x, player.y - en.y);
-            if(!player.isDashing && dist < player.radius+en.radius-5){
-                isPaused = true;
-                if(confirm(`Onurlu Savaşçı ${config.name} düştü!\n\nSkor: ${score}\nTekrar denemek ister misin?`)) window.location.reload();
+            if (!player.isDashing && dist < player.radius + en.radius) {
+                player.hp -= 0.8;
+                if (player.hp <= 0) {
+                    isPaused = true;
+                    if(confirm("ONURUNLA CAN VERDİN.\nSkor: " + score + "\nTekrar dene?")) window.location.reload();
+                }
             }
-        }
+        });
     }
     requestAnimationFrame(animate);
 }
 
-window.addEventListener('resize', ()=>{
-    canvasWidth = window.innerWidth;
-    canvasHeight = window.innerHeight;
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+window.addEventListener('resize', () => {
+    canvasWidth = window.innerWidth; canvasHeight = window.innerHeight;
+    canvas.width = canvasWidth; canvas.height = canvasHeight;
 });
 
 animate();
