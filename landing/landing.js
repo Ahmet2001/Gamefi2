@@ -207,6 +207,7 @@ window.executeTokenTransfer = async function() {
         // Bu komut, cüzdandan cüzdana SOL değil, senin oluşturduğun TOKEN'ı gönderir.
         
         // Şimdilik en stabil yöntem olarak SOL transferi komutunu örnek koyuyorum (Çalışması için):
+        /*
         transaction.add(
             solanaWeb3.SystemProgram.transfer({
                 fromPubkey: fromWallet,
@@ -214,7 +215,7 @@ window.executeTokenTransfer = async function() {
                 lamports: 10000000, // 0.01 SOL test ücreti
             })
         );
-
+        
         // 4. Phantom'a imzalat ve gönder
         alert("Phantom onay penceresi açılıyor...");
         const { signature } = await provider.signAndSendTransaction(transaction);
@@ -222,9 +223,9 @@ window.executeTokenTransfer = async function() {
         // 5. İşlemin onaylanmasını bekle
         console.log("İşlem imzalandı, onay bekleniyor: ", signature);
         await connection.confirmTransaction(signature);
-
+*/
         alert("Ödeme Alındı! Yolun açık olsun Samuray.");
-        window.location.href = "game/game.html";
+        window.location.href = "gameLanding/gameLanding.html";
 
     } catch (err) {
         console.error("Ödeme hatası:", err);
