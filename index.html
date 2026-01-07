@@ -4,120 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desert Samurai | Play-to-Earn</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="landing/landing.css">
+
+    <!-- Buffer -->
     <script src="https://bundle.run/buffer@6.0.3"></script>
     <script>
-        // Tarayıcıya Buffer'ın nerede olduğunu tanıtıyoruz
         window.Buffer = window.Buffer || buffer.Buffer;
     </script>
 
+    <!-- Solana -->
     <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
-    <!-- CDN üzerinden yükle, local dosyaya gerek yok -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 
+    <!-- Ethers -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </head>
+
 <body>
 
-    <nav class="navbar">
-        <div class="logo">DESERT SAMURAI</div>
-        <div class="nav-links">
-            <a href="#gameplay">Gameplay</a>
-            <a href="#tokenomics">Tokenomics</a>
-            <a href="#roadmap">Roadmap</a>
-            <a href="whitepaper.pdf" class="highlight">Whitepaper</a>
-        </div>
-        <button id="connect-wallet" class="btn-samurai">CONNECT WALLET</button>
-    </nav>
-    
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-card">
-                <span class="badge">V1.0 ALPHA LIVE</span>
-                <h1 class="title">CHOOSE YOUR PATH</h1>
-                <p class="subtitle">
-                    Kum fırtınalarının ortasında onurunu koru. 
-                    NFT samuraylarını eğit, savaş ve <span>$BUSHIDO</span> kazan.
-                </p>
-        
-                <div class="cta-group">
-                    <button class="btn-samurai big" onclick="enterGame()">ENTER GAME</button>
-                </div>
-            </div>
-        </div>
-    </section>
+<nav class="navbar">
+    <div class="logo">DESERT SAMURAI</div>
+    <div class="nav-links">
+        <a href="#gameplay">Gameplay</a>
+        <a href="#tokenomics">Tokenomics</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="whitepaper.pdf" class="highlight">Whitepaper</a>
+    </div>
+    <button id="connect-wallet" class="btn-samurai">CONNECT WALLET</button>
+</nav>
 
-    <section id="gameplay" class="features">
-        <h2 class="section-title">GAME FEATURES</h2>
-        <div class="feature-grid">
-            <div class="f-card">
-                <div class="icon">⚔️</div>
-                <h3>Epic Battles</h3>
-                <p>PvP arenalarında yeteneklerini sergile ve sıralamaya gir.</p>
-            </div>
-            <div class="f-card">
-                <div class="icon">⛩️</div>
-                <h3>Clan System</h3>
-                <p>Klanını kur, kaleleri fethet ve pasif gelir elde et.</p>
-            </div>
-            <div class="f-card">
-                <div class="icon">💎</div>
-                <h3>NFT Marketplace</h3>
-                <p>Nadir eşyalarını ve samuraylarını özgürce takasla.</p>
-            </div>
-        </div>
-    </section>
-    <section id="wallet-info" class="wallet-info p-4">
-        <h2 class="section-title">Wallet Info</h2>
-        <ul id="token-list" class="token-list list-disc list-inside text-white"></ul>
-    </section>
-    
-    
-    <footer class="footer-main">
-        <div class="footer-stats">
-            <div class="footer-card">
-                <h3>TOKENOMICS</h3>
-                <div class="stat-line"><span>Supply:</span> 1B $BUSHIDO</div>
-                <div class="stat-line"><span>Reward Pool:</span> %50</div>
-                <div class="progress-bar"><div style="width: 50%"></div></div>
-            </div>
-            <div class="footer-card">
-                <h3>NFT SAMURAI</h3>
-                <p>Common, Rare, Legendary</p>
-                <button class="btn-text">View Collection →</button>
-            </div>
-            <div id="roadmap" class="footer-card">
-                <h3>ROADMAP</h3>
-                <ul class="roadmap-list">
-                    <li class="done">Q1: NFT Minting</li>
-                    <li>Q2: Clan Wars</li>
-                    <li>Q3: Land Governance</li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Desert Samurai. Built on Solana.</p>
-            <div class="social-icons">
-                </div>
-        </div>
-    </footer>
-    <div id="payment-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50">
-        <div class="bg-[#1a1a1a] border-2 border-[#d4af37] p-8 rounded-2xl max-w-sm w-full text-center shadow-[0_0_50px_rgba(212,175,55,0.3)]">
-            <div class="text-4xl mb-4">📜</div>
-            <h2 class="text-[#d4af37] font-bold text-2xl mb-2">Giriş Bedeli</h2>
-            <p class="text-gray-400 mb-6">Maceraya başlamak için <span class="text-white font-bold">10 $BUSHIDO</span> ödemen gerekiyor.</p>
-            
-            <div class="flex flex-col gap-3">
-                <button onclick="executeTokenTransfer()" id="confirm-pay-btn" class="bg-[#d4af37] text-black font-bold py-3 rounded-lg hover:bg-[#b8962e] transition-all">
-                    ONAYLA VE GÖNDER
-                </button>
-                <button onclick="closePaymentModal()" class="text-gray-500 hover:text-white text-sm">Vazgeç</button>
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-card">
+            <span class="badge">V1.0 ALPHA LIVE</span>
+            <h1 class="title">CHOOSE YOUR PATH</h1>
+            <p class="subtitle">
+                Kum fırtınalarının ortasında onurunu koru.
+                NFT samuraylarını eğit, savaş ve <span>$BUSHIDO</span> kazan.
+            </p>
+            <div class="cta-group">
+                <button class="btn-samurai big" onclick="enterGame()">ENTER GAME</button>
             </div>
         </div>
     </div>
-    
-    <script src="landing/landing.js"></script>
+</section>
+
+<section id="gameplay" class="features">
+    <h2 class="section-title">GAME FEATURES</h2>
+    <div class="feature-grid">
+        <div class="f-card">
+            <div class="icon">⚔️</div>
+            <h3>Epic Battles</h3>
+            <p>PvP arenalarında yeteneklerini sergile ve sıralamaya gir.</p>
+        </div>
+        <div class="f-card">
+            <div class="icon">⛩️</div>
+            <h3>Clan System</h3>
+            <p>Klanını kur, kaleleri fethet ve pasif gelir elde et.</p>
+        </div>
+        <div class="f-card">
+            <div class="icon">💎</div>
+            <h3>NFT Marketplace</h3>
+            <p>Nadir eşyalarını ve samuraylarını özgürce takasla.</p>
+        </div>
+    </div>
+</section>
+
+<section id="wallet-info" class="wallet-info p-4">
+    <h2 class="section-title">Wallet Info</h2>
+    <ul id="token-list" class="token-list list-disc list-inside text-white"></ul>
+</section>
+
+<footer class="footer-main">
+    <div class="footer-stats">
+        <div class="footer-card">
+            <h3>TOKENOMICS</h3>
+            <div class="stat-line"><span>Supply:</span> 1B $BUSHIDO</div>
+            <div class="stat-line"><span>Reward Pool:</span> %50</div>
+            <div class="progress-bar"><div style="width:50%"></div></div>
+        </div>
+        <div class="footer-card">
+            <h3>NFT SAMURAI</h3>
+            <p>Common, Rare, Legendary</p>
+            <button class="btn-text">View Collection →</button>
+        </div>
+        <div id="roadmap" class="footer-card">
+            <h3>ROADMAP</h3>
+            <ul class="roadmap-list">
+                <li class="done">Q1: NFT Minting</li>
+                <li>Q2: Clan Wars</li>
+                <li>Q3: Land Governance</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2024 Desert Samurai. Built on Solana.</p>
+    </div>
+</footer>
+
+<!-- Backend Connection -->
+<script>
+const BACKEND_URL = "https://gamefi2.onrender.com";
+
+async function enterGame() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/healthz`);
+        if (!res.ok) throw new Error("Backend error");
+
+        const data = await res.json();
+        console.log("Backend OK:", data);
+
+        alert("Backend bağlantısı başarılı! Oyuna giriliyor...");
+
+        // İleride:
+        // window.location.href = "game/index.html";
+
+    } catch (err) {
+        console.error(err);
+        alert("Backend bağlantısı başarısız!");
+    }
+}
+</script>
+
+<script src="landing/landing.js"></script>
 </body>
-</html>  
+</html>
