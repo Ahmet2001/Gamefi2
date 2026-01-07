@@ -2,9 +2,10 @@ from flask import Flask
 
 app = Flask(__name__)
 
-@app.route("/api/status")
-def status():
-    return {"status": "backend alive"}
+@app.route("/")
+def home():
+    return "Gamefi2 backend is running!"
 
-if __name__ == "__main__":
-    app.run()
+@app.route("/healthz")
+def health():
+    return {"status": "ok"}
